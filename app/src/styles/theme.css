@@ -1,0 +1,172 @@
+/* ============================================================
+   SolanIT Design System – Glassmorphism Theme
+   Primary brand: #ff6f00
+   ============================================================ */
+
+/* ── Static Tailwind design tokens ─────────────────────────── */
+@theme {
+  /* Brand palette */
+  --color-brand:       #ff6f00;
+  --color-brand-light: #ffa040;
+  --color-brand-dark:  #c43e00;
+  --color-brand-xd:    #8a2c00;
+
+  /* Neutral ramp (warm-tinted) */
+  --color-neutral-50:  #fff8f0;
+  --color-neutral-100: #fdeede;
+  --color-neutral-200: #fad9b8;
+  --color-neutral-300: #f5bc88;
+  --color-neutral-400: #e89055;
+  --color-neutral-500: #c96a30;
+  --color-neutral-600: #9d4d1c;
+  --color-neutral-700: #6e3310;
+  --color-neutral-800: #3e1c06;
+  --color-neutral-900: #1a0800;
+  --color-neutral-950: #0d0400;
+
+  /* Semantic */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
+  --color-info:    #3b82f6;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-2xl: 32px;
+
+  /* Shadows */
+  --shadow-brand-glow: 0 0 24px rgba(255, 111, 0, 0.35);
+  --shadow-brand-sm:   0 0 12px rgba(255, 111, 0, 0.2);
+  --shadow-glass:      0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-glass-dark: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Adaptive CSS variables (light / dark) ──────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Background layers */
+  --bg-gradient:
+    radial-gradient(ellipse at 15% 60%, rgba(255, 111, 0, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(255, 140, 40, 0.07) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(255, 80, 0, 0.05) 0%, transparent 50%),
+    linear-gradient(145deg, #fff8f0 0%, #fdf3e3 40%, #ffefd4 100%);
+
+  /* Glass surface */
+  --glass-bg:           rgba(255, 255, 255, 0.55);
+  --glass-bg-strong:    rgba(255, 255, 255, 0.75);
+  --glass-bg-subtle:    rgba(255, 255, 255, 0.25);
+  --glass-border:       rgba(255, 255, 255, 0.70);
+  --glass-border-muted: rgba(255, 200, 150, 0.30);
+  --glass-blur:         blur(16px);
+  --glass-blur-strong:  blur(24px);
+  --glass-saturate:     saturate(180%);
+  --glass-shadow:       0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(255, 111, 0, 0.04);
+
+  /* Text */
+  --color-text:         #1a0800;
+  --color-text-muted:   #6e3310;
+  --color-text-faint:   #c96a30;
+  --color-text-inverse: #ffffff;
+
+  /* Surface */
+  --color-surface:      rgba(255, 255, 255, 0.6);
+  --color-surface-alt:  rgba(255, 245, 235, 0.7);
+
+  /* Nav */
+  --nav-bg:    rgba(255, 255, 255, 0.60);
+  --nav-border: rgba(255, 200, 140, 0.35);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-gradient:
+    radial-gradient(ellipse at 15% 60%, rgba(255, 111, 0, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(255, 80, 0, 0.10) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(200, 60, 0, 0.08) 0%, transparent 50%),
+    linear-gradient(145deg, #0f0700 0%, #160c04 40%, #1c1008 100%);
+
+  --glass-bg:           rgba(20, 10, 3, 0.45);
+  --glass-bg-strong:    rgba(30, 15, 4, 0.65);
+  --glass-bg-subtle:    rgba(20, 10, 3, 0.20);
+  --glass-border:       rgba(255, 255, 255, 0.08);
+  --glass-border-muted: rgba(255, 111, 0, 0.15);
+  --glass-blur:         blur(16px);
+  --glass-blur-strong:  blur(24px);
+  --glass-saturate:     saturate(140%);
+  --glass-shadow:       0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(255, 111, 0, 0.08);
+
+  --color-text:         #fff0e0;
+  --color-text-muted:   #ffa868;
+  --color-text-faint:   #cc7740;
+  --color-text-inverse: #0f0700;
+
+  --color-surface:      rgba(20, 10, 3, 0.50);
+  --color-surface-alt:  rgba(30, 15, 5, 0.55);
+
+  --nav-bg:    rgba(15, 7, 0, 0.65);
+  --nav-border: rgba(255, 111, 0, 0.15);
+}
+
+/* ── Custom glass utility classes ───────────────────────────── */
+@layer utilities {
+  .glass {
+    background-color: var(--glass-bg);
+    backdrop-filter: var(--glass-blur) var(--glass-saturate);
+    -webkit-backdrop-filter: var(--glass-blur) var(--glass-saturate);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-strong {
+    background-color: var(--glass-bg-strong);
+    backdrop-filter: var(--glass-blur-strong) var(--glass-saturate);
+    -webkit-backdrop-filter: var(--glass-blur-strong) var(--glass-saturate);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-subtle {
+    background-color: var(--glass-bg-subtle);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border-muted);
+  }
+
+  .glass-nav {
+    background-color: var(--nav-bg);
+    backdrop-filter: var(--glass-blur-strong) var(--glass-saturate);
+    -webkit-backdrop-filter: var(--glass-blur-strong) var(--glass-saturate);
+    border-bottom: 1px solid var(--nav-border);
+  }
+
+  /* Brand glow effect on focusable elements */
+  .brand-glow {
+    box-shadow: var(--shadow-brand-glow);
+  }
+
+  .brand-glow-sm {
+    box-shadow: var(--shadow-brand-sm);
+  }
+
+  /* Text using adaptive vars */
+  .text-adaptive {
+    color: var(--color-text);
+  }
+
+  .text-adaptive-muted {
+    color: var(--color-text-muted);
+  }
+
+  .text-adaptive-faint {
+    color: var(--color-text-faint);
+  }
+}
