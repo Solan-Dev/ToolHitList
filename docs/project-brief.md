@@ -56,7 +56,7 @@ Currently, technology requests arrive ad-hoc (email, Teams messages, verbal) wit
 | **Tech Specialist** | Developer, architect or analyst who enriches and delivers the request | Back-of-house form: approach, t-shirt size, collaboration needs, dependent requests |
 | **Tech Lead / Admin** | Manages queue, moves cards, enforces WIP cap, assigns work | Full Kanban control, team filtering, WIP management |
 
-> **Open Question OQ-01:** How are personas distinguished at runtime? Options: (a) Dataverse security roles mapped to Entra groups, (b) a `Role` field on the user's record, (c) the app shows different views based on URL path and trusts the user to self-select. **Recommendation:** Dataverse security roles — define `jsdev_BusinessUser` and `jsdev_TechSpecialist` roles.
+> **OQ-01 RESOLVED:** Roles are determined by Entra security group membership → Dataverse team membership. **MVP: all users see all parts of the app — no gating required.** Post-MVP: Dataverse teams control visibility. `jsdev_BusinessUser` team sees business surface; `jsdev_TechSpecialist` team sees the enrichment form and internal comments. Build the app now with a `<RoleGate role="TechSpecialist">` wrapper component that in MVP simply renders its children unconditionally — this means gating can be switched on post-MVP without a structural refactor.
 
 ---
 
@@ -86,7 +86,7 @@ Currently, technology requests arrive ad-hoc (email, Teams messages, verbal) wit
 | Created On | DateTime (auto) | Record creation timestamp | System |
 | Modified On | DateTime (auto) | Last modified timestamp | System |
 
-> **Open Question OQ-02:** Should `Business Area` and `Team` be free-text, a fixed Choice column, or a related lookup table? A lookup table (`jsdev_businessarea`, `jsdev_techteam`) allows the admin to manage the lists without a code deploy. **Recommendation:** Lookup tables.
+> **OQ-02 RESOLVED:** Both `Business Area` and `Tech Team` use Dataverse lookup tables (`jsdev_businessarea`, `jsdev_techteam`). Admins manage the lists directly in Dataverse — no code deploy needed to add areas or teams. The request form **must** use a searchable, typeahead dropdown (not a plain `<select>`) to handle long lists. Build a reusable `<DataverseLookupSelect>` component that calls `getAll` with debounced text filtering.
 
 > **Open Question OQ-03:** Should `Technology Touched` be a multi-select Choice or a related table? Multi-select Choice is simpler; a related table (`jsdev_technology`) allows richer metadata per technology. **Recommendation:** Multi-select Choice for v1.
 
@@ -246,8 +246,8 @@ Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
 
 | ID | Question | Blocks |
 |----|----------|--------|
-| OQ-01 | How are personas distinguished at runtime? | All role-gated features |
-| OQ-02 | Business Area and Team — Choice or Lookup table? | Schema design |
+| ~~OQ-01~~ | ~~How are personas distinguished at runtime?~~ | ✅ Entra group → Dataverse team. MVP = open access; post-MVP = `<RoleGate>` component. |
+| ~~OQ-02~~ | ~~Business Area and Team — Choice or Lookup table?~~ | ✅ Lookup tables. Searchable typeahead `<DataverseLookupSelect>` component. |
 | OQ-03 | Technology Touched — multi-select Choice or related table? | Schema design |
 | OQ-04 | Does Kanban show all 6 stages or 4 + separate In Production view? | Kanban layout |
 | OQ-05 | Validation gate before Top 10 Backlog — required fields? | Stage transition logic |
