@@ -1,14 +1,15 @@
 {
-  "servers": {
-    "power-agent-mcp": {
-      "type": "stdio",
-      "command": "poweragentmcp",
-      "args": [],
-      "env": {
-        "POWERPLATFORM_TENANT_ID": "${env:POWERPLATFORM_TENANT_ID}",
-        "POWERPLATFORM_APP_ID": "${env:POWERPLATFORM_APP_ID}",
-        "POWERPLATFORM_CLIENT_SECRET": "${env:POWERPLATFORM_CLIENT_SECRET}"
-      }
-    }
-  }
+  // Power Agent MCP server is managed by the 'darbotlabs.power-agent-mcp' VS Code extension.
+  // To activate: Ctrl+Shift+P → "Power Agent MCP: Start MCP Server"
+  // The extension auto-registers the server with GitHub Copilot once started.
+  //
+  // Required environment variables (set in your user profile, NOT committed):
+  //   $env:POWERPLATFORM_TENANT_ID      = "<your-tenant-id>"
+  //   $env:POWERPLATFORM_APP_ID         = "<service-principal-app-id>"
+  //   $env:POWERPLATFORM_CLIENT_SECRET  = "<secret>"
+  //
+  // NOTE: The DarBotLabs.PowerAgent.MCP NuGet dotnet tool has a known broken
+  // package structure and cannot be installed via 'dotnet tool install'.
+  // The VS Code extension is self-contained and does not require it.
+  "servers": {}
 }

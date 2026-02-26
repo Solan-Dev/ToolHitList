@@ -80,17 +80,17 @@ Copilot Studio agents are solution components packaged inside the same Dataverse
 - Knowledge sources: public URLs, SharePoint, or Dataverse; document in the relevant ADR
 
 ### MCP server setup (one-time, per machine)
-```bash
-# Requires .NET SDK 8+ — install from https://dot.net if not present
-dotnet tool install --global DarBotLabs.PowerAgent.MCP
 
-# Set these environment variables (add to user profile or .env – never commit secrets)
-$env:POWERPLATFORM_TENANT_ID   = "<your-tenant-id>"
-$env:POWERPLATFORM_APP_ID      = "<service-principal-app-id>"
-$env:POWERPLATFORM_CLIENT_SECRET = "<secret>"   # stored in user env only
+The `darbotlabs.power-agent-mcp` VS Code extension is **self-contained** — no separate dotnet tool install needed.
+
+1. Set environment variables in your user profile (**never commit these**):
+```powershell
+$env:POWERPLATFORM_TENANT_ID     = "<your-tenant-id>"
+$env:POWERPLATFORM_APP_ID        = "<service-principal-app-id>"
+$env:POWERPLATFORM_CLIENT_SECRET = "<secret>"
 ```
-
-Then in VS Code: **Ctrl+Shift+P → Power Agent MCP: Start MCP Server**
+2. In VS Code: **Ctrl+Shift+P → Power Agent MCP: Start MCP Server**  
+   The extension registers itself with GitHub Copilot automatically once started.
 
 ### Available MCP tool groups (via `f1e_pp_*`)
 | Group | What it does |
