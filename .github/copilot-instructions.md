@@ -69,6 +69,41 @@ pac pcf push --publisher-prefix jsdev
 - Post-deploy checklist: activate flows, verify environment variable values, confirm connection reference assignments, smoke-test key screens/flows
 - Rollback: re-import previous managed solution zip from `dist/` or prior Git tag
 
+## Copilot Studio – Agent Development
+
+Copilot Studio agents are solution components packaged inside the same Dataverse solution as the rest of the app. The **Power Agent MCP** server (253+ tools) is wired up in `.vscode/mcp.json` and gives AI assistants (GitHub Copilot, Claude) direct access to Power Platform at dev time.
+
+### Key agent concepts
+- All agents are stored as solution components — never created directly in Prod without promotion through Dev → Test
+- Agent topics: small, composable; name variables with `loc` prefix; document every user-visible prompt
+- Each tool/action must have a tight "when to use" description and defined failure behavior
+- Knowledge sources: public URLs, SharePoint, or Dataverse; document in the relevant ADR
+
+### MCP server setup (one-time, per machine)
+```bash
+# Requires .NET SDK 8+ — install from https://dot.net if not present
+dotnet tool install --global DarBotLabs.PowerAgent.MCP
+
+# Set these environment variables (add to user profile or .env – never commit secrets)
+$env:POWERPLATFORM_TENANT_ID   = "<your-tenant-id>"
+$env:POWERPLATFORM_APP_ID      = "<service-principal-app-id>"
+$env:POWERPLATFORM_CLIENT_SECRET = "<secret>"   # stored in user env only
+```
+
+Then in VS Code: **Ctrl+Shift+P → Power Agent MCP: Start MCP Server**
+
+### Available MCP tool groups (via `f1e_pp_*`)
+| Group | What it does |
+|-------|-------------|
+| `f1e_pp_copilot` | Create, configure, deploy, test Copilot Studio agents |
+| `f1e_pp_solution` | Export, import, pack, unpack solutions |
+| `f1e_pp_application` | Canvas apps, PCF components |
+| `f1e_pp_data` | Dataverse CRUD, schema discovery |
+| `f1e_pp_environment` | Environment management |
+| `f1e_pp_connector` | Custom connectors, connection references |
+| `f1e_pp_quality` | Solution checker, Power Fx, testing |
+| `f1e_pp_pipeline` | CI/CD, package deployment |
+
 ## Integration Points
 
 - **Dataverse** – primary data store; all schema changes via solution (no manual customizations in target environments)
