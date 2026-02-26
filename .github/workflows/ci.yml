@@ -1,4 +1,4 @@
-name: Power Platform CI – Export & Validate
+name: Power Apps Code App CI
 
 on:
   push:
@@ -11,28 +11,35 @@ on:
 
 jobs:
   build:
-    name: Pack & validate solution
+    name: Lint + Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install PAC CLI
-        run: |
-          dotnet tool install --global Microsoft.PowerApps.CLI.Tool
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+      - name: Set up Node.js (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
-      - name: Pack solution (Managed)
-        run: |
-          pac solution pack \
-            --zipfile ./dist/ToolHitList_managed.zip \
-            --folder ./src \
-            --packagetype Managed
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Upload solution artifact
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ToolHitList-managed
-          path: dist/ToolHitList_managed.zip
+          name: toolhitlist-dist
+          path: app/dist/
           retention-days: 30
