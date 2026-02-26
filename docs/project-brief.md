@@ -70,25 +70,25 @@ Currently, technology requests arrive ad-hoc (email, Teams messages, verbal) wit
 | Created By | SystemUser (auto) | Logged-in user who submitted the form | System |
 | Business Area | Choice / Lookup | Which part of the business this serves | Business Requester |
 | Team | Choice / Lookup | Which tech team will own delivery | Tech Lead |
-| Technology Touched | Multi-select Choice | e.g. Power Apps, Power Automate, Dataverse, SharePoint, Azure, Power BI | Tech Specialist |
+| Technology Touched | Multi-select Choice | Fixed list: Power Apps, Power Automate, Dataverse, SharePoint, Azure, Power BI, Copilot Studio, Other | Tech Specialist |
 | Assignee | Lookup → SystemUser | Tech team member responsible for delivery | Tech Lead |
 | Status / Stage | Choice (see Workflow Stages) | Current position in the lifecycle | System / Tech Lead |
 | Priority | Choice: Critical / High / Medium / Low | Business priority | Business Leader |
-| T-Shirt Size | Choice: XS / S / M / L / XL | Tech complexity estimate | Tech Specialist |
-| Technical Approach | Multi-line text | How the tech team plans to solve it | Tech Specialist |
+| T-Shirt Size | Choice: XS / S / M / L / XL | Tech complexity estimate — visible to business users (read-only) | Tech Specialist |
+| Technical Approach | Multi-line text | High-level approach — visible to business users (read-only) | Tech Specialist |
 | Collaboration Required | Yes/No + Multi-line text | Whether other departments need to be involved | Tech Specialist |
-| Related Requests | N:N self-referential | Linked or dependent requests | Tech Lead / Tech Specialist |
 | Dependency Notes | Multi-line text | Free-text description of dependencies | Tech Specialist |
+| Due Date | Date | Target delivery date | Tech Lead |
 | Time Currently Spent (hrs/wk) | Decimal Number | How long the business currently spends on this problem per week | Business Requester |
 | Time Saved Estimate (hrs/wk) | Decimal Number | Estimated time saved per week post-delivery | Tech Specialist |
 | Actual Time Saved (hrs/wk) | Decimal Number | Measured time saved — entered post-production by business user | Business Requester (post-production) |
-| Target Delivery Date | Date | Expected completion date | Tech Lead |
+| Queue Position | Integer (1–10) | Ordering within Top 10 Backlog; null for all other stages | Tech Lead |
 | Created On | DateTime (auto) | Record creation timestamp | System |
 | Modified On | DateTime (auto) | Last modified timestamp | System |
 
-> **OQ-02 RESOLVED:** Both `Business Area` and `Tech Team` use Dataverse lookup tables (`jsdev_businessarea`, `jsdev_techteam`). Admins manage the lists directly in Dataverse — no code deploy needed to add areas or teams. The request form **must** use a searchable, typeahead dropdown (not a plain `<select>`) to handle long lists. Build a reusable `<DataverseLookupSelect>` component that calls `getAll` with debounced text filtering.
+> **OQ-02 RESOLVED:** Both `Business Area` and `Tech Team` use Dataverse lookup tables (`jsdev_businessarea`, `jsdev_techteam`). Admins manage the lists directly in Dataverse — no code deploy needed. The request form must use a searchable typeahead `<DataverseLookupSelect>` component with debounced filtering.
 
-> **Open Question OQ-03:** Should `Technology Touched` be a multi-select Choice or a related table? Multi-select Choice is simpler; a related table (`jsdev_technology`) allows richer metadata per technology. **Recommendation:** Multi-select Choice for v1.
+> **OQ-03 RESOLVED:** `Technology Touched` is a **multi-select Choice column** on `jsdev_toolhitlistrequest`. Fixed list — no related table needed in v1.
 
 ---
 
@@ -122,54 +122,66 @@ The request lifecycle has six stages mapped to Kanban columns. Transitions are c
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | FR-01 | Business user can create a new request via a structured form | Must Have |
-| FR-02 | Business user can edit their own request while in Draft or Backlog | Must Have |
-| FR-03 | Business user can view all requests on the Kanban board | Must Have |
+| FR-02 | Business user can edit their own request while in Draft or Submitted stage | Must Have |
+| FR-03 | Business user can view the Kanban board (Top 10 Backlog → In Production columns) | Must Have |
 | FR-04 | Business user can filter Kanban by Team | Must Have |
 | FR-05 | Business user can set Priority on their own request | Must Have |
 | FR-06 | Business user can enter `Time Currently Spent` on the request form | Must Have |
 | FR-07 | Business user can enter `Actual Time Saved` once request moves to Done/In Production | Must Have |
 | FR-08 | Business user can post a comment on a request that is In Production | Must Have |
-| FR-09 | Business user can see linked/related requests from the Kanban card | Should Have |
+| FR-09 | Business user can see T-Shirt Size and Technical Approach on the request detail (read-only) | Must Have |
+| FR-10 | Business user can see linked/related requests from the request detail view | Should Have |
+
+### Inbox (Tech Lead View)
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| FR-11 | Tech Lead has an Inbox view listing all Submitted requests not yet on the Kanban | Must Have |
+| FR-12 | Tech Lead can promote a Submitted request to Top 10 Backlog (validation gate enforced) | Must Have |
+| FR-13 | Tech Lead can reject/return a request to Draft with a note | Should Have |
 
 ### Kanban Board
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-10 | Kanban has four columns: Backlog, Top 10 Backlog, Doing, Done | Must Have |
-| FR-11 | Top 10 Backlog column enforces a hard WIP cap of 10 items with a visible count | Must Have |
-| FR-12 | Cards show: Title, Requester, Team, Priority badge, T-Shirt Size badge, Assignee avatar | Must Have |
-| FR-13 | Related/dependent requests are visually linked on the board (link icon + tooltip or expand) | Should Have |
-| FR-14 | Kanban can be filtered by Team | Must Have |
-| FR-15 | Kanban can be filtered by Assignee | Should Have |
-| FR-16 | Cards are drag-and-drop movable between columns (Tech Lead only) | Should Have |
+| FR-14 | Kanban has four columns: Top 10 Backlog, Doing, Done, In Production | Must Have |
+| FR-15 | Top 10 Backlog column enforces a hard WIP cap of 10 with a visible `x/10` counter | Must Have |
+| FR-16 | A card can be de-escalated from Top 10 Backlog back to Submitted (frees the WIP slot) | Must Have |
+| FR-17 | Cards show: Title, Business Area, Priority badge, T-Shirt Size badge, Assignee, Due Date | Must Have |
+| FR-18 | Related/dependent requests shown on card via a link icon with tooltip count | Should Have |
+| FR-19 | Kanban can be filtered by Team | Must Have |
+| FR-20 | Kanban can be filtered by Assignee | Should Have |
+| FR-21 | Cards are drag-and-drop movable between columns | Should Have |
 
 ### Tech Specialist Surface
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-17 | Tech specialist can open a request and complete the technical enrichment form | Must Have |
-| FR-18 | Tech specialist can set T-Shirt Size (XS/S/M/L/XL) with a guide tooltip per size | Must Have |
-| FR-19 | Tech specialist can set Technology Touched (multi-select) | Must Have |
-| FR-20 | Tech specialist can set Technical Approach | Must Have |
-| FR-21 | Tech specialist can flag Collaboration Required and specify which departments | Must Have |
-| FR-22 | Tech specialist can link Related Requests (many-to-many, searchable lookup) | Must Have |
-| FR-23 | Tech specialist can set Time Saved Estimate | Should Have |
+| FR-22 | Tech specialist can open a request and complete the technical enrichment tab | Must Have |
+| FR-23 | Tech specialist can set T-Shirt Size (XS/S/M/L/XL) with a sizing guide tooltip | Must Have |
+| FR-24 | Tech specialist can set Technology Touched (multi-select Choice) | Must Have |
+| FR-25 | Tech specialist can write Technical Approach (visible to business users read-only) | Must Have |
+| FR-26 | Tech specialist can flag Collaboration Required and specify which departments | Must Have |
+| FR-27 | Tech specialist can link Related Requests via `jsdev_requestdependency` intersect table (searchable) | Must Have |
+| FR-28 | Tech specialist can set Time Saved Estimate and Due Date | Must Have |
+| FR-29 | Tech specialist can post internal-only comments not visible to business users | Should Have |
 
 ### Impact & ROI
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-24 | System calculates weekly hours saved = Actual Time Saved - 0 (or shows delta vs estimate) | Must Have |
-| FR-25 | In Production tab shows a summary of live requests with their ROI metrics | Should Have |
-| FR-26 | Total hours/week saved surfaced as a headline stat somewhere visible | Should Have |
+| FR-30 | System displays: Estimated hrs/wk saved, Actual hrs/wk saved, and delta vs estimate on request detail | Must Have |
+| FR-31 | `/live` dashboard shows all In Production requests with ROI metrics per item | Must Have |
+| FR-32 | `/live` dashboard headline stats: total requests live, total hrs/wk saved, avg delivery time | Must Have |
+| FR-33 | ROI dashboard filterable by Business Area and/or Team | Should Have |
 
 ### Comments
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-27 | Post-production comment thread on each In Production request | Must Have |
-| FR-28 | Comments show author name, date, and body text | Must Have |
-| FR-29 | Tech team can also post internal comments (visible in tech view only) | Should Have |
+| FR-34 | Post-production comment thread on each In Production request (visible to all) | Must Have |
+| FR-35 | Comments show author name, timestamp, and body | Must Have |
+| FR-36 | Internal comments tab on request detail (Tech Specialist authored; not shown to business users) | Should Have |
 
 ---
 
@@ -191,11 +203,12 @@ The request lifecycle has six stages mapped to Kanban columns. Transitions are c
 ```
 Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
   │
-  ├── /                    → Kanban Board (business + tech lead view)
+  ├── /                    → Kanban Board (4 columns: Top 10 Backlog | Doing | Done | In Production)
+  ├── /inbox               → Tech Lead Inbox (Submitted requests awaiting promotion)
   ├── /requests/new        → New Request Form (business)
   ├── /requests/:id        → Request Detail (tabbed: Overview | Technical | Comments | ROI)
-  ├── /live                → In Production tab (ROI summary + comment threads)
-  └── /settings            → Admin: manage Teams, Business Areas (Tech Lead only)
+  ├── /live                → ROI Dashboard (headline stats + In Production list + comment threads)
+  └── /settings            → Admin: manage Teams, Business Areas
 ```
 
 **Key layers:**
@@ -212,12 +225,12 @@ Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
 | Table (logical name) | Display Name | Key Columns |
 |----------------------|--------------|-------------|
 | `jsdev_toolhitlistrequest` | Tool Hit List Request | All request fields above |
-| `jsdev_requestcomment` | Request Comment | `jsdev_requestid` (lookup), `jsdev_body`, `jsdev_commenttype` (Business/Internal), `createdby` |
-| `jsdev_requestdependency` | Request Dependency | `jsdev_fromrequestid`, `jsdev_torequestid` (N:N self-referential via intersect table) |
-| `jsdev_techteam` | Tech Team | `jsdev_name`, `jsdev_teamlead` |
-| `jsdev_businessarea` | Business Area | `jsdev_name`, `jsdev_owner` |
+| `jsdev_requestcomment` | Request Comment | `jsdev_requestid` (lookup), `jsdev_body`, `jsdev_commenttype` Choice (Business/Internal), `createdby` (auto) |
+| `jsdev_requestdependency` | Request Dependency | Intersect table: `jsdev_fromrequestid` (lookup → request), `jsdev_torequestid` (lookup → request), `jsdev_dependencytype` Choice (Related/Blocks/Blocked By) |
+| `jsdev_techteam` | Tech Team | `jsdev_name`, `jsdev_teamlead` (lookup → SystemUser) |
+| `jsdev_businessarea` | Business Area | `jsdev_name`, `jsdev_owner` (lookup → SystemUser) |
 
-> **Open Question OQ-06:** Should `jsdev_requestdependency` be a true N:N relationship (Dataverse relationship) or an intersect table managed manually? Dataverse native N:N is cleaner but has SDK limitations. **Recommendation:** Native N:N relationship on `jsdev_toolhitlistrequest` (self-referential); confirm SDK support before building.
+> **OQ-06 RESOLVED:** `jsdev_requestdependency` is a **manual intersect table** (not a native Dataverse N:N relationship). Two lookup columns pointing at `jsdev_toolhitlistrequest` — `jsdev_fromrequestid` and `jsdev_torequestid`. This avoids SDK limitations with self-referential N:N and gives full CRUD control via generated services.
 
 ---
 
@@ -235,10 +248,9 @@ Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Dataverse N:N self-referential relationship not supported by SDK `getAll` | Related tasks feature blocked | Prototype early; fallback to intersect table with two lookup columns |
-| WIP cap logic must be enforced client-side AND server-side | Users could bypass the cap via direct Dataverse writes | Add a Dataverse real-time workflow/plugin to enforce cap server-side |
-| Role-based view switching complexity | Incorrect data exposure | Define Dataverse security roles before any page build begins |
-| Top 10 Backlog ordering — who decides position 1 vs 10? | Priority within WIP queue unclear | Add a `jsdev_queueposition` integer field (1–10) to Top 10 Backlog items |
+| WIP cap enforced client-side only — direct Dataverse writes bypass it | Cap can be exceeded | Add a real-time Power Automate flow or low-code plugin on `jsdev_toolhitlistrequest` create/update to enforce cap server-side |
+| Queue position management on de-escalation | Gaps in 1–10 sequence when cards are removed | Recalculate `jsdev_queueposition` on every promote/de-escalate action in the app |
+| Role-based view switching post-MVP | Incorrect data exposure if gating switched on without testing | `<RoleGate>` component is in place from MVP; test with Dataverse team membership before enabling |
 
 ---
 
@@ -246,16 +258,16 @@ Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
 
 | ID | Question | Blocks |
 |----|----------|--------|
-| ~~OQ-01~~ | ~~How are personas distinguished at runtime?~~ | ✅ Entra group → Dataverse team. MVP = open access; post-MVP = `<RoleGate>` component. |
-| ~~OQ-02~~ | ~~Business Area and Team — Choice or Lookup table?~~ | ✅ Lookup tables. Searchable typeahead `<DataverseLookupSelect>` component. |
-| OQ-03 | Technology Touched — multi-select Choice or related table? | Schema design |
-| OQ-04 | Does Kanban show all 6 stages or 4 + separate In Production view? | Kanban layout |
-| OQ-05 | Validation gate before Top 10 Backlog — required fields? | Stage transition logic |
-| OQ-06 | N:N self-referential relationship — native Dataverse or intersect table? | Dependency feature |
-| OQ-07 | Should notifications (Teams/email) fire on assignment or status changes? | Out of scope for v1? |
-| OQ-08 | Should there be due dates / SLA target fields on requests? | Schema design |
-| OQ-09 | Can a Business Requester see the Technical Approach and T-Shirt Size, or is that internal only? | Request detail page permissions |
-| OQ-10 | Is there a reporting/summary dashboard (total requests, avg delivery time, total hrs saved)? | In Production tab scope |
+| ~~OQ-01~~ | ~~How are personas distinguished at runtime?~~ | ✅ Entra group → Dataverse team. MVP = open access; post-MVP = `<RoleGate>`. |
+| ~~OQ-02~~ | ~~Business Area and Team — Choice or Lookup table?~~ | ✅ Lookup tables + `<DataverseLookupSelect>` typeahead. |
+| ~~OQ-03~~ | ~~Technology Touched — multi-select Choice or related table?~~ | ✅ Multi-select Choice column. Fixed list in v1. |
+| ~~OQ-04~~ | ~~Kanban stages — all 6 or 4 + separate view?~~ | ✅ 4-column Kanban (Top 10 Backlog → In Production). Draft/Submitted in separate Inbox. |
+| ~~OQ-05~~ | ~~Validation gate + de-escalation?~~ | ✅ T-Shirt Size + Assignee required to promote. De-escalation back to Submitted supported. |
+| ~~OQ-06~~ | ~~N:N dependency — native or intersect table?~~ | ✅ Manual intersect table `jsdev_requestdependency` with two lookup columns. |
+| ~~OQ-07~~ | ~~Notifications on assignment/status change?~~ | ➡️ Moved to Nice to Have (see below). |
+| ~~OQ-08~~ | ~~Due dates / SLA?~~ | ✅ Due Date field added. No SLA in v1. |
+| ~~OQ-09~~ | ~~Can business users see Technical Approach and T-Shirt Size?~~ | ✅ Yes — read-only on request detail Overview tab. |
+| ~~OQ-10~~ | ~~Reporting/summary dashboard?~~ | ✅ `/live` ROI dashboard with headline stats, per-item metrics, and filters. |
 
 ---
 
@@ -263,12 +275,24 @@ Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
 
 | Milestone | Scope |
 |-----------|-------|
-| **M1 – Schema** | Define and create all Dataverse tables, columns, relationships and security roles. Run `pac code add-data-source`. |
-| **M2 – Request CRUD** | New Request form, Request detail view, edit/delete. Business user persona. |
-| **M3 – Kanban Board** | 4-column board, WIP cap, team filter, card component. |
-| **M4 – Tech Enrichment** | Technical form tab on request detail, t-shirt sizing, approach, collaboration, dependencies. |
-| **M5 – ROI & Comments** | Impact fields, In Production stage, post-production comment thread. |
-| **M6 – Polish & Deploy** | Reporting stats, notifications (if in scope), UAT, production deploy. |
+| **M1 – Schema** | Create all Dataverse tables, columns, Choice fields, lookup relationships, intersect table. Run `pac code add-data-source` for each table. |
+| **M2 – Request CRUD** | New Request form (with `<DataverseLookupSelect>` for Business Area/Team), Request detail view (Overview tab), edit/delete. |
+| **M3 – Inbox + Kanban** | Tech Lead Inbox, promotion/de-escalation logic, WIP cap enforcement, 4-column Kanban with filters, `<RequestCard>` component. |
+| **M4 – Tech Enrichment** | Technical tab on request detail: T-Shirt Size, Technology Touched, Approach, Collaboration, Dependencies (`jsdev_requestdependency`). `<RoleGate>` component (renders freely in MVP). |
+| **M5 – ROI & Comments** | Impact fields, In Production stage, post-production comment thread, internal comments tab. |
+| **M6 – Dashboard & Deploy** | `/live` ROI dashboard with headline stats and filters. UAT. Production deploy via Pipelines. |
+
+---
+
+## Nice to Have (Post-MVP)
+
+| ID | Feature |
+|----|--------|
+| NTH-01 | **Notifications** — Power Automate flow sends Teams/email notification when a request is assigned, promoted to Top 10, or status changes |
+| NTH-02 | **Role gating** — switch on `<RoleGate>` using Dataverse team membership via `PowerApps.getContext()` |
+| NTH-03 | **Avg delivery time** — calculated field or dashboard metric: days from Submitted → Done |
+| NTH-04 | **Export to Excel** — download Kanban/ROI data |
+| NTH-05 | **Mobile-responsive layout** — extend below 1024px breakpoint |
 
 ---
 
@@ -278,3 +302,4 @@ Power Apps Code App (Vite + React 19 + Tailwind v4 + Power Apps SDK)
 |------|--------|--------|
 | 2026-02-26 | James Solan | Initial scaffold (empty template) |
 | 2026-02-26 | James Solan / Copilot | Full requirements pass from project dump |
+| 2026-02-26 | James Solan / Copilot | Resolved OQ-03 through OQ-10; all open questions closed; Nice to Have section added |
