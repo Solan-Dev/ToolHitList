@@ -1,0 +1,38 @@
+name: Power Platform CI – Export & Validate
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Pack & validate solution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PAC CLI
+        run: |
+          dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Pack solution (Managed)
+        run: |
+          pac solution pack \
+            --zipfile ./dist/ToolHitList_managed.zip \
+            --folder ./src \
+            --packagetype Managed
+
+      - name: Upload solution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ToolHitList-managed
+          path: dist/ToolHitList_managed.zip
+          retention-days: 30

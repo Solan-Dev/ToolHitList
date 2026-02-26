@@ -1,0 +1,37 @@
+# Power Platform / PCF .gitignore
+
+# Managed solution exports (packed zips – never commit these)
+dist/
+*.zip
+
+# PAC CLI auth profiles
+.pac/
+
+# Node / npm
+node_modules/
+out/
+.cache/
+
+# TypeScript build output
+**/*.js.map
+**/generated/
+**/bundle.js
+
+# Environment-specific values
+.env
+.env.*
+config/local.json
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Power Apps test output
+TestOutput/
+
+# PAC CLI temp
+PackageDeployer/
